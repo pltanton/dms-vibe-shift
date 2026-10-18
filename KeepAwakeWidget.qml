@@ -12,7 +12,7 @@ PluginComponent {
     readonly property real until: pluginData.until ?? 0
     readonly property real startedAt: pluginData.startedAt ?? 0
     readonly property string preset: pluginData.preset ?? ""
-    readonly property var presets: Duration.parseList(pluginData.presets || "30m, 1h, 2h, 4h, 8h, 08:00")
+    readonly property var presets: Duration.parseList(pluginData.presets || "30m, 1h, 2h, 4h, 8h")
     readonly property string defaultDuration: pluginData.defaultDuration || "4h"
     readonly property bool blockLid: pluginData.blockLid ?? true
     readonly property bool keepScreenOn: pluginData.keepScreenOn ?? false
@@ -56,7 +56,6 @@ PluginComponent {
 
     readonly property bool shown: active || !hideWhenOff
 
-
     pillRightClickAction: () => active ? stop() : start(defaultDuration)
 
     ccWidgetIcon: "owl"
@@ -82,17 +81,35 @@ PluginComponent {
     horizontalBarPill: shown ? horizontalPill : null
     verticalBarPill: shown ? verticalPill : null
 
+    component PillIcon: Item {
+        width: root.iconSize
+        height: root.iconSize
+
+        DankIcon {
+            visible: root.active
+            anchors.centerIn: parent
+            name: "owl"
+            filled: true
+            size: root.iconSize
+            color: Theme.primary
+        }
+
+        DankSVGIcon {
+            visible: !root.active
+            anchors.centerIn: parent
+            source: Qt.resolvedUrl("assets/perch.svg")
+            size: root.iconSize
+            colorOverride: Theme.widgetIconColor
+        }
+    }
+
     Component {
         id: horizontalPill
 
         Row {
             spacing: Theme.spacingXS
 
-            DankIcon {
-                name: "owl"
-                filled: root.active
-                size: root.iconSize
-                color: root.active ? Theme.primary : Theme.widgetIconColor
+            PillIcon {
                 anchors.verticalCenter: parent.verticalCenter
             }
 
@@ -112,11 +129,7 @@ PluginComponent {
         Column {
             spacing: Theme.spacingXS
 
-            DankIcon {
-                name: "owl"
-                filled: root.active
-                size: root.iconSize
-                color: root.active ? Theme.primary : Theme.widgetIconColor
+            PillIcon {
                 anchors.horizontalCenter: parent.horizontalCenter
             }
 

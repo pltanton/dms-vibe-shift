@@ -10,9 +10,9 @@ PluginSettings {
     StringSetting {
         settingKey: "presets"
         label: "Presets"
-        description: "Comma-separated: durations (30m, 1h30m) or clock times (08:00 means until 8 AM)"
-        placeholder: "30m, 1h, 2h, 4h, 8h, 08:00"
-        defaultValue: "30m, 1h, 2h, 4h, 8h, 08:00"
+        description: "Comma-separated durations, e.g. 30m, 1h30m, 4h"
+        placeholder: "30m, 1h, 2h, 4h, 8h"
+        defaultValue: "30m, 1h, 2h, 4h, 8h"
     }
 
     StringSetting {
@@ -32,7 +32,7 @@ PluginSettings {
     ToggleSetting {
         settingKey: "hideWhenOff"
         label: "Hide bar icon when off"
-        description: "Show the icon only while Keep Awake is on, like the built-in idle inhibitor"
+        description: "Show the icon only while Keep Awake is on. Otherwise the bar shows the owl's empty perch"
         defaultValue: false
     }
 

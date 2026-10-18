@@ -144,7 +144,6 @@ Rectangle {
                     required property string modelData
                     width: (presetRow.width - Theme.spacingS * (panel.ctl.presets.length - 1)) / panel.ctl.presets.length
                     label: Duration.presetLabel(modelData)
-                    icon: Duration.isClock(modelData) ? "bedtime" : ""
                     selected: panel.ctl.active && panel.ctl.preset === modelData
                     onClicked: panel.ctl.start(modelData)
                 }
