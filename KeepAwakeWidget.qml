@@ -81,27 +81,10 @@ PluginComponent {
     horizontalBarPill: shown ? horizontalPill : null
     verticalBarPill: shown ? verticalPill : null
 
-    component PillIcon: Item {
-        width: root.iconSize
-        height: root.iconSize
-
-        DankSVGIcon {
-            anchors.fill: parent
-            source: Qt.resolvedUrl("assets/perch.svg")
-            size: root.iconSize
-            colorOverride: root.active ? Theme.primary : Theme.widgetIconColor
-        }
-
-        DankIcon {
-            visible: root.active
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.bottom: parent.bottom
-            anchors.bottomMargin: root.iconSize * 0.2 - (height - size) / 2 - size * 0.08
-            name: "owl"
-            filled: true
-            size: Math.round(root.iconSize * 0.78)
-            color: Theme.primary
-        }
+    component PillIcon: DankSVGIcon {
+        source: Qt.resolvedUrl(root.active ? "assets/perch-owl.svg" : "assets/perch.svg")
+        size: root.iconSize
+        colorOverride: root.active ? Theme.primary : Theme.widgetIconColor
     }
 
     Component {
