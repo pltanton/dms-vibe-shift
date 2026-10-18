@@ -22,10 +22,12 @@ PluginComponent {
     }
 
     function start(text) {
-        const seconds = Duration.parse(text);
-        if (seconds === 0)
+        const value = Duration.resolve(text, Date.now());
+        if (value === 0)
             return false;
-        setUntil(seconds === Duration.FOREVER ? Duration.FOREVER : Date.now() + seconds * 1000);
+        PluginService.savePluginData("keepAwake", "preset", String(text).trim());
+        PluginService.savePluginData("keepAwake", "startedAt", Date.now());
+        setUntil(value);
         return true;
     }
 
@@ -88,7 +90,7 @@ PluginComponent {
         const left = Duration.remaining(until, Date.now());
         if (left === 0)
             return "off";
-        return left === Duration.FOREVER ? "on, until stopped" : "on, " + Duration.label(left) + " left";
+        return left === Duration.FOREVER ? "on, until stopped" : "on, " + Duration.label(left) + " left, until " + Duration.clock(until, true);
     }
 
     onUntilChanged: apply()

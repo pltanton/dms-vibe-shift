@@ -4,29 +4,45 @@ import qs.Services
 import qs.Widgets
 import qs.Modules.Plugins
 import "Duration.js" as Duration
+import "."
 
 PluginComponent {
     id: root
 
     readonly property real until: pluginData.until ?? 0
-    readonly property var presets: Duration.parseList(pluginData.presets || "1h, 4h, 8h, ∞")
+    readonly property real startedAt: pluginData.startedAt ?? 0
+    readonly property string preset: pluginData.preset ?? ""
+    readonly property var presets: Duration.parseList(pluginData.presets || "30m, 1h, 2h, 4h, 8h, 08:00")
     readonly property string defaultDuration: pluginData.defaultDuration || "4h"
+    readonly property bool blockLid: pluginData.blockLid ?? true
+    readonly property bool keepScreenOn: pluginData.keepScreenOn ?? false
+    readonly property bool showTime: pluginData.showTime ?? true
+    readonly property bool hideWhenOff: pluginData.hideWhenOff ?? false
+
     property real now: Date.now()
     readonly property bool active: Duration.remaining(until, now) !== 0
-    readonly property string leftText: {
-        const left = Duration.remaining(until, now);
-        return left === Duration.FOREVER ? "Until stopped" : Duration.label(left) + " left";
+
+    function save(key, value) {
+        PluginService.savePluginData("keepAwake", key, value);
     }
 
     function start(text) {
-        const seconds = Duration.parse(text);
-        if (seconds === 0)
-            return;
-        PluginService.savePluginData("keepAwake", "until", seconds === Duration.FOREVER ? Duration.FOREVER : Date.now() + seconds * 1000);
+        const now = Date.now();
+        const value = Duration.resolve(text, now);
+        if (value === 0)
+            return false;
+        save("preset", String(text).trim());
+        save("startedAt", now);
+        save("until", value);
+        return true;
     }
 
     function stop() {
-        PluginService.savePluginData("keepAwake", "until", 0);
+        save("until", 0);
+    }
+
+    function setOption(key, value) {
+        save(key, value);
     }
 
     onUntilChanged: now = Date.now()
@@ -38,78 +54,27 @@ PluginComponent {
         onTriggered: root.now = Date.now()
     }
 
-    component PresetChips: Flow {
-        spacing: Theme.spacingS
+    visible: active || !hideWhenOff
 
-        Repeater {
-            model: root.presets
+    pillRightClickAction: () => active ? stop() : start(defaultDuration)
 
-            StyledRect {
-                width: chipText.implicitWidth + Theme.spacingL * 2
-                height: 36
-                radius: Theme.cornerRadius
-                color: chipArea.containsMouse ? Theme.primaryContainer : Theme.surfaceContainerHighest
-
-                StyledText {
-                    id: chipText
-                    anchors.centerIn: parent
-                    text: Duration.label(Duration.parse(modelData))
-                    color: Theme.surfaceText
-                    font.pixelSize: Theme.fontSizeMedium
-                }
-
-                MouseArea {
-                    id: chipArea
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: root.start(modelData)
-                }
-            }
-        }
-
-        StyledRect {
-            visible: root.active
-            width: stopText.implicitWidth + Theme.spacingL * 2
-            height: 36
-            radius: Theme.cornerRadius
-            color: stopArea.containsMouse ? Theme.errorHover : Theme.error
-
-            StyledText {
-                id: stopText
-                anchors.centerIn: parent
-                text: "Stop"
-                color: Theme.errorText
-                font.pixelSize: Theme.fontSizeMedium
-            }
-
-            MouseArea {
-                id: stopArea
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                onClicked: root.stop()
-            }
-        }
-    }
-
-    ccWidgetIcon: "coffee"
+    ccWidgetIcon: "visibility"
     ccWidgetPrimaryText: "Keep Awake"
-    ccWidgetSecondaryText: active ? leftText : "Off"
+    ccWidgetSecondaryText: {
+        if (!active)
+            return "Off";
+        if (until === Duration.FOREVER)
+            return "Until turned off";
+        return Duration.short(until, now) + " left";
+    }
     ccWidgetIsActive: active
     onCcWidgetToggled: active ? stop() : start(defaultDuration)
 
     ccDetailContent: Component {
-        StyledRect {
-            implicitHeight: detailChips.implicitHeight + Theme.spacingM * 2
-            radius: Theme.cornerRadius
-            color: Theme.surfaceContainerHigh
-
-            PresetChips {
-                id: detailChips
-                anchors.fill: parent
-                anchors.margins: Theme.spacingM
-            }
+        KeepAwakePanel {
+            ctl: root
+            onImplicitHeightChanged: root.ccDetailHeight = implicitHeight + Theme.spacingS
+            Component.onCompleted: root.ccDetailHeight = implicitHeight + Theme.spacingS
         }
     }
 
@@ -118,7 +83,7 @@ PluginComponent {
             spacing: Theme.spacingXS
 
             DankIcon {
-                name: "coffee"
+                name: "visibility"
                 filled: root.active
                 size: root.iconSize
                 color: root.active ? Theme.primary : Theme.surfaceText
@@ -126,7 +91,7 @@ PluginComponent {
             }
 
             StyledText {
-                visible: root.active
+                visible: root.active && root.showTime
                 text: Duration.short(root.until, root.now)
                 color: Theme.primary
                 font.pixelSize: Theme.fontSizeMedium
@@ -140,7 +105,7 @@ PluginComponent {
             spacing: Theme.spacingXS
 
             DankIcon {
-                name: "coffee"
+                name: "visibility"
                 filled: root.active
                 size: root.iconSize
                 color: root.active ? Theme.primary : Theme.surfaceText
@@ -148,7 +113,7 @@ PluginComponent {
             }
 
             StyledText {
-                visible: root.active
+                visible: root.active && root.showTime
                 text: Duration.short(root.until, root.now)
                 color: Theme.primary
                 font.pixelSize: Theme.fontSizeSmall
@@ -158,17 +123,11 @@ PluginComponent {
     }
 
     popoutContent: Component {
-        PopoutComponent {
-            headerText: "Keep Awake"
-            detailsText: root.active ? root.leftText : "Idle and lid close won't suspend while this is on."
-            showCloseButton: true
-
-            PresetChips {
-                width: parent.width
-            }
+        KeepAwakePanel {
+            ctl: root
+            flat: true
         }
     }
 
-    popoutWidth: 340
-    popoutHeight: 180
+    popoutWidth: 380
 }
