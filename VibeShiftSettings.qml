@@ -69,6 +69,13 @@ PluginSettings {
     }
 
     ToggleSetting {
+        settingKey: "lockOnLid"
+        label: "Lock when the lid closes"
+        description: "Lock the screen when the lid shuts and no external monitor is connected"
+        defaultValue: true
+    }
+
+    ToggleSetting {
         settingKey: "keepScreenOn"
         label: "Keep screen on"
         description: "Also turn on the DMS idle inhibitor, so the screen doesn't lock or blank"

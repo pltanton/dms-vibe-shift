@@ -13,6 +13,10 @@ PluginComponent {
     readonly property string defaultDuration: pluginData.defaultDuration || "4h"
     readonly property bool blockLid: pluginData.blockLid ?? true
     readonly property bool keepScreenOn: pluginData.keepScreenOn ?? false
+    readonly property bool lockOnLid: pluginData.lockOnLid ?? true
+
+    // Suspend normally does the locking, and it's blocked now, so lock when the lid shuts on the laptop panel alone.
+    readonly property string lidWatch: 'external() { for f in /sys/class/drm/card*-*/status; do case "$f" in *eDP*|*LVDS*|*DSI*) ;; *) [ "$(cat "$f")" = connected ] && return 0 ;; esac; done; return 1; }; ' + 'was=0; while sleep 2; do if [ "$(busctl get-property org.freedesktop.login1 /org/freedesktop/login1 org.freedesktop.login1.Manager LidClosed)" = "b true" ]; then ' + '[ $was = 0 ] && ! external && dms ipc call lock lock; was=1; else was=0; fi; done'
 
     property real until: 0
     property string preset: ""
@@ -51,10 +55,11 @@ PluginComponent {
     }
 
     function launch(value, presetText) {
-        const cmd = ["systemd-run", "--user", "--unit=" + unit, "--collect", "--quiet", "--description=Vibe Shift until=" + value + " preset=" + presetText];
+        const cmd = ["systemd-run", "--user", "--unit=" + unit, "--collect", "--quiet", "--setenv=PATH", "--description=Vibe Shift until=" + value + " preset=" + presetText];
         if (value !== Duration.FOREVER)
             cmd.push("--property=RuntimeMaxSec=" + Duration.remaining(value, Date.now()));
-        cmd.push("systemd-inhibit", "--what=" + (blockLid ? "sleep:handle-lid-switch" : "sleep"), "--who=Vibe Shift", "--why=Vibe Shift plugin for DankMaterialShell", "--mode=block", "sleep", "infinity");
+        cmd.push("systemd-inhibit", "--what=" + (blockLid ? "sleep:handle-lid-switch" : "sleep"), "--who=Vibe Shift", "--why=Vibe Shift plugin for DankMaterialShell", "--mode=block");
+        cmd.push.apply(cmd, blockLid && lockOnLid ? ["sh", "-c", lidWatch] : ["sleep", "infinity"]);
         until = value;
         preset = presetText;
         launchedAt = Date.now();
@@ -123,7 +128,10 @@ PluginComponent {
         return left === Duration.FOREVER ? "on, until stopped" : "on, " + Duration.label(left) + " left, until " + Duration.clock(until, true);
     }
 
-    onBlockLidChanged: {
+    onBlockLidChanged: relaunch()
+    onLockOnLidChanged: relaunch()
+
+    function relaunch() {
         if (loaded && active)
             launch(until, preset);
     }

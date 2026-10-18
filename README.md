@@ -15,6 +15,7 @@ The lock lives in its own user unit, so restarting DMS doesn't drop it, and syst
 
 - Control Center card: presets (`30m 1h 2h 4h 8h`), custom time (`90m`, `2h30m`, `23:30`), countdown, lid and screen toggles
 - Bar icon: owl eyes, an eye or a laptop (open while on, closed while off), or an owl on a branch (empty branch while off); can be hidden while off; right-click toggles
+- Closing the lid locks the screen (unless an external monitor is connected), since the usual lock-before-suspend can't happen
 - While on, every suspend is blocked, including Suspend from the power menu. Turn it off first.
 
 ## IPC
