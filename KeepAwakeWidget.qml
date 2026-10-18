@@ -58,7 +58,7 @@ PluginComponent {
 
     pillRightClickAction: () => active ? stop() : start(defaultDuration)
 
-    ccWidgetIcon: "visibility"
+    ccWidgetIcon: "owl"
     ccWidgetPrimaryText: "Keep Awake"
     ccWidgetSecondaryText: {
         if (!active)
@@ -83,10 +83,10 @@ PluginComponent {
             spacing: Theme.spacingXS
 
             DankIcon {
-                name: "visibility"
+                name: "owl"
                 filled: root.active
                 size: root.iconSize
-                color: root.active ? Theme.primary : Theme.surfaceText
+                color: root.active ? Theme.primary : Theme.widgetIconColor
                 anchors.verticalCenter: parent.verticalCenter
             }
 
@@ -105,10 +105,10 @@ PluginComponent {
             spacing: Theme.spacingXS
 
             DankIcon {
-                name: "visibility"
+                name: "owl"
                 filled: root.active
                 size: root.iconSize
-                color: root.active ? Theme.primary : Theme.surfaceText
+                color: root.active ? Theme.primary : Theme.widgetIconColor
                 anchors.horizontalCenter: parent.horizontalCenter
             }
 

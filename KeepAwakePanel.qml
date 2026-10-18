@@ -10,7 +10,6 @@ Rectangle {
     required property var ctl
     property bool flat: false
 
-    readonly property real contentWidth: width - Theme.spacingL * 2
     readonly property bool timed: ctl.active && ctl.until !== Duration.FOREVER
     readonly property real total: ctl.startedAt > 0 && timed ? ctl.until - ctl.startedAt : 0
 
@@ -57,6 +56,7 @@ Rectangle {
             }
 
             StyledText {
+                visible: chip.label !== ""
                 anchors.verticalCenter: parent.verticalCenter
                 text: chip.label
                 font.pixelSize: Theme.fontSizeSmall
@@ -76,107 +76,75 @@ Rectangle {
 
     Column {
         id: content
-        width: panel.contentWidth
         anchors.left: parent.left
+        anchors.right: parent.right
         anchors.top: parent.top
         anchors.margins: Theme.spacingL
         spacing: Theme.spacingM
 
-        Item {
+        Column {
             width: parent.width
-            height: Math.max(headerIcon.height, headerText.implicitHeight, countdown.implicitHeight)
-
-            DankIcon {
-                id: headerIcon
-                anchors.left: parent.left
-                anchors.verticalCenter: parent.verticalCenter
-                name: "visibility"
-                filled: panel.ctl.active
-                size: Theme.iconSizeLarge
-                color: panel.ctl.active ? Theme.primary : Theme.surfaceText
-            }
-
-            Column {
-                id: headerText
-                anchors.left: headerIcon.right
-                anchors.leftMargin: Theme.spacingM
-                anchors.right: countdown.visible ? countdown.left : parent.right
-                anchors.rightMargin: Theme.spacingS
-                anchors.verticalCenter: parent.verticalCenter
-                spacing: Theme.spacingXXS
-
-                StyledText {
-                    width: parent.width
-                    text: "Keep Awake"
-                    font.pixelSize: Theme.fontSizeLarge
-                    font.weight: Font.Medium
-                    color: Theme.surfaceText
-                    elide: Text.ElideRight
-                }
-
-                StyledText {
-                    width: parent.width
-                    text: {
-                        if (!panel.ctl.active)
-                            return "Off · sleeps on idle and lid close";
-                        if (!panel.timed)
-                            return "On until you turn it off";
-                        return "Until " + Duration.clock(panel.ctl.until, SettingsData.use24HourClock);
-                    }
-                    font.pixelSize: Theme.fontSizeSmall
-                    color: Theme.surfaceVariantText
-                    elide: Text.ElideRight
-                }
-            }
+            spacing: Theme.spacingXS
 
             StyledText {
-                id: countdown
-                visible: panel.ctl.active
-                anchors.right: parent.right
-                anchors.verticalCenter: parent.verticalCenter
+                anchors.horizontalCenter: parent.horizontalCenter
                 text: {
+                    if (!panel.ctl.active)
+                        return "Off";
                     if (!panel.timed)
                         return "∞";
                     const r = Duration.remaining(panel.ctl.until, panel.ctl.now);
                     const h = Math.floor(r / 3600), m = Math.floor(r % 3600 / 60), s = r % 60;
                     return (h > 0 ? h + ":" + String(m).padStart(2, "0") : String(m)) + ":" + String(s).padStart(2, "0");
                 }
-                font.pixelSize: Theme.fontSizeXLarge
+                font.pixelSize: Theme.fontSizeXLarge * 2
                 font.weight: Font.Medium
-                isMonospace: true
-                color: Theme.primary
+                isMonospace: panel.timed
+                color: panel.ctl.active ? Theme.primary : Theme.surfaceVariantText
+            }
+
+            StyledText {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: {
+                    if (!panel.ctl.active)
+                        return "Sleeps on idle and lid close as usual";
+                    if (!panel.timed)
+                        return "Awake until you turn it off";
+                    return "left · until " + Duration.clock(panel.ctl.until, SettingsData.use24HourClock);
+                }
+                font.pixelSize: Theme.fontSizeSmall
+                color: Theme.surfaceVariantText
             }
         }
 
         Rectangle {
-            visible: panel.total > 0
             width: parent.width
             height: 4
             radius: 2
             color: Theme.floatingSurface
+            opacity: panel.total > 0 ? 1 : 0
 
             Rectangle {
                 height: parent.height
                 radius: parent.radius
                 color: Theme.primary
-                width: parent.width * Math.max(0, Math.min(1, (panel.ctl.until - panel.ctl.now) / panel.total))
+                width: panel.total > 0 ? parent.width * Math.max(0, Math.min(1, (panel.ctl.until - panel.ctl.now) / panel.total)) : 0
             }
         }
 
-        Grid {
-            id: presetGrid
+        Row {
+            id: presetRow
             width: parent.width
-            columns: 3
-            columnSpacing: Theme.spacingS
-            rowSpacing: Theme.spacingS
+            spacing: Theme.spacingS
 
             Repeater {
                 model: panel.ctl.presets
 
                 Chip {
                     required property string modelData
-                    width: (presetGrid.width - Theme.spacingS * 2) / 3
+                    width: (presetRow.width - Theme.spacingS * (panel.ctl.presets.length - 1)) / panel.ctl.presets.length
                     label: Duration.presetLabel(modelData)
+                    icon: Duration.isClock(modelData) ? "bedtime" : ""
                     selected: panel.ctl.active && panel.ctl.preset === modelData
                     onClicked: panel.ctl.start(modelData)
                 }
@@ -190,16 +158,16 @@ Rectangle {
             DankTextField {
                 id: customField
                 width: parent.width - startChip.width - Theme.spacingS
-                placeholderText: "Custom: 90m, 2h30m, 23:30"
+                placeholderText: "90m, 2h30m or 23:30"
+                hidePlaceholderOnFocus: false
                 onAccepted: startChip.clicked()
             }
 
             Chip {
                 id: startChip
                 anchors.verticalCenter: customField.verticalCenter
-                width: Math.max(96, implicitWidth)
+                width: 56
                 icon: "play_arrow"
-                label: "Start"
                 onClicked: {
                     if (panel.ctl.start(customField.text))
                         customField.text = "";
@@ -224,7 +192,7 @@ Rectangle {
             Chip {
                 visible: panel.ctl.active
                 width: (parent.width - Theme.spacingS) / 2
-                icon: "bedtime"
+                icon: "stop"
                 label: "Turn off"
                 danger: true
                 onClicked: panel.ctl.stop()

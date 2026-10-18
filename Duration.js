@@ -41,12 +41,16 @@ function parseList(text) {
     return String(text ?? "").split(",").map(p => p.trim()).filter(p => resolve(p, Date.now()) !== 0);
 }
 
+function isClock(text) {
+    return /^\d{1,2}:\d{2}$/.test(String(text).trim());
+}
+
 function presetLabel(text) {
     const s = String(text).trim();
     if (resolve(s, Date.now()) === FOREVER)
         return "∞";
-    if (/^\d{1,2}:\d{2}$/.test(s))
-        return "Until " + s.padStart(5, "0");
+    if (isClock(s))
+        return s.padStart(5, "0");
     if (/^\d+$/.test(s))
         return s + "m";
     return s.replace(/\s+/g, " ");

@@ -12,7 +12,7 @@
         "control-center",
         "ipc"
     ],
-    "icon": "visibility",
+    "icon": "owl",
     "components": {
         "daemon": "./KeepAwakeDaemon.qml",
         "widget": "./KeepAwakeWidget.qml"
