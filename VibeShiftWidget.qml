@@ -71,7 +71,8 @@ PluginComponent {
     ccWidgetIcon: ({
             "eyes": "owl",
             "eye": active ? "visibility" : "visibility_off",
-            "laptop": "laptop"
+            "laptop": "laptop",
+            "branch": "owl"
         })[iconStyle] ?? "owl"
     ccWidgetPrimaryText: "Vibe Shift"
     ccWidgetSecondaryText: {

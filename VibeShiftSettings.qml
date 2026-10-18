@@ -26,7 +26,7 @@ PluginSettings {
     SelectionSetting {
         settingKey: "iconStyle"
         label: "Bar icon"
-        description: "Open while Vibe Shift is on, closed while it's off"
+        description: "Awake while Vibe Shift is on, asleep (or an empty branch) while it's off"
         options: [
             {
                 label: "Owl eyes",
@@ -39,6 +39,10 @@ PluginSettings {
             {
                 label: "Laptop",
                 value: "laptop"
+            },
+            {
+                label: "Owl on a branch",
+                value: "branch"
             }
         ]
         defaultValue: "eyes"
