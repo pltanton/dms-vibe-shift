@@ -85,21 +85,22 @@ PluginComponent {
         width: root.iconSize
         height: root.iconSize
 
-        DankIcon {
-            visible: root.active
-            anchors.centerIn: parent
-            name: "owl"
-            filled: true
-            size: root.iconSize
-            color: Theme.primary
-        }
-
         DankSVGIcon {
-            visible: !root.active
-            anchors.centerIn: parent
+            anchors.fill: parent
             source: Qt.resolvedUrl("assets/perch.svg")
             size: root.iconSize
-            colorOverride: Theme.widgetIconColor
+            colorOverride: root.active ? Theme.primary : Theme.widgetIconColor
+        }
+
+        DankIcon {
+            visible: root.active
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: root.iconSize * 0.2 - (height - size) / 2 - size * 0.08
+            name: "owl"
+            filled: true
+            size: Math.round(root.iconSize * 0.78)
+            color: Theme.primary
         }
     }
 
