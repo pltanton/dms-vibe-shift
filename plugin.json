@@ -1,0 +1,19 @@
+{
+  "id": "keepAwake",
+  "name": "Keep Awake",
+  "description": "Keep the system awake for a set time, even with the lid closed. Holds a logind sleep/idle/lid-switch inhibitor, so the screen can still lock.",
+  "version": "0.1.0",
+  "author": "pltanton",
+  "license": "MIT",
+  "type": "composite",
+  "capabilities": ["daemon", "dankbar-widget", "control-center", "ipc"],
+  "icon": "coffee",
+  "components": {
+    "daemon": "./KeepAwakeDaemon.qml",
+    "widget": "./KeepAwakeWidget.qml"
+  },
+  "settings": "./KeepAwakeSettings.qml",
+  "requires_dms": ">=1.5.0",
+  "requires": ["systemd-inhibit"],
+  "permissions": ["settings_read", "settings_write"]
+}
