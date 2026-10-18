@@ -54,7 +54,8 @@ PluginComponent {
         onTriggered: root.now = Date.now()
     }
 
-    visible: active || !hideWhenOff
+    readonly property bool shown: active || !hideWhenOff
+
 
     pillRightClickAction: () => active ? stop() : start(defaultDuration)
 
@@ -78,7 +79,12 @@ PluginComponent {
         }
     }
 
-    horizontalBarPill: Component {
+    horizontalBarPill: shown ? horizontalPill : null
+    verticalBarPill: shown ? verticalPill : null
+
+    Component {
+        id: horizontalPill
+
         Row {
             spacing: Theme.spacingXS
 
@@ -100,7 +106,9 @@ PluginComponent {
         }
     }
 
-    verticalBarPill: Component {
+    Component {
+        id: verticalPill
+
         Column {
             spacing: Theme.spacingXS
 
