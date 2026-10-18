@@ -18,6 +18,7 @@ PluginComponent {
     readonly property bool keepScreenOn: pluginData.keepScreenOn ?? false
     readonly property bool showTime: pluginData.showTime ?? true
     readonly property bool hideWhenOff: pluginData.hideWhenOff ?? false
+    readonly property string iconStyle: pluginData.iconStyle || "eyes"
 
     property real now: Date.now()
     readonly property bool active: Duration.remaining(until, now) !== 0
@@ -58,7 +59,11 @@ PluginComponent {
 
     pillRightClickAction: () => active ? stop() : start(defaultDuration)
 
-    ccWidgetIcon: "owl"
+    ccWidgetIcon: ({
+            "eyes": "owl",
+            "eye": active ? "visibility" : "visibility_off",
+            "laptop": "laptop"
+        })[iconStyle] ?? "owl"
     ccWidgetPrimaryText: "Keep Awake"
     ccWidgetSecondaryText: {
         if (!active)
@@ -81,10 +86,11 @@ PluginComponent {
     horizontalBarPill: shown ? horizontalPill : null
     verticalBarPill: shown ? verticalPill : null
 
-    component PillIcon: DankSVGIcon {
-        source: Qt.resolvedUrl(root.active ? "assets/perch-owl.svg" : "assets/perch.svg")
+    component PillIcon: AwakeIcon {
+        style: root.iconStyle
+        awake: root.active
         size: root.iconSize
-        colorOverride: root.active ? Theme.primary : Theme.widgetIconColor
+        color: root.active ? Theme.primary : Theme.widgetIconColor
     }
 
     Component {

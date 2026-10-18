@@ -23,6 +23,27 @@ PluginSettings {
         defaultValue: "4h"
     }
 
+    SelectionSetting {
+        settingKey: "iconStyle"
+        label: "Bar icon"
+        description: "Open while Keep Awake is on, closed while it's off"
+        options: [
+            {
+                label: "Owl eyes",
+                value: "eyes"
+            },
+            {
+                label: "Eye",
+                value: "eye"
+            },
+            {
+                label: "Laptop",
+                value: "laptop"
+            }
+        ]
+        defaultValue: "eyes"
+    }
+
     ToggleSetting {
         settingKey: "showTime"
         label: "Show remaining time in the bar"
@@ -32,7 +53,7 @@ PluginSettings {
     ToggleSetting {
         settingKey: "hideWhenOff"
         label: "Hide bar icon when off"
-        description: "Show the icon only while Keep Awake is on. Otherwise the bar shows the owl's empty perch"
+        description: "Show the icon only while Keep Awake is on. Otherwise the bar shows the icon with its eyes closed"
         defaultValue: false
     }
 

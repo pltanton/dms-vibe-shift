@@ -8,7 +8,7 @@ DMS's built-in idle inhibitor only blocks the Wayland idle timer, so closing the
 
 - Bar pill with remaining time, popout with presets (`30m, 1h, 2h, 4h, 8h` by default), custom input (`90m`, `2h30m`, `23:30`) and a live countdown
 - Control Center tile: click toggles the default duration; expand for presets, custom time, lid and screen toggles
-- Bar icon: an owl while on, its empty perch while off (or hide it while off)
+- Bar icon: owl eyes, an eye or a laptop, open while on and closed while off (or hidden while off)
 - Survives a shell restart; the lock is released when the time runs out
 - Optional: also turn on the DMS idle inhibitor so the screen stays on
 

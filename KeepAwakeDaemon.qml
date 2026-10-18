@@ -126,8 +126,11 @@ PluginComponent {
                 }
             }
 
-            onExited: exitCode => {
-                if (!released && root.proc === this) {
+            onExited: (exitCode, exitStatus) => {
+                // Killed by a signal means the session is going down (systemd stops the whole cgroup), not that time ran out.
+                if (!released && root.proc === this && exitStatus !== 0) {
+                    root.proc = null;
+                } else if (!released && root.proc === this) {
                     root.proc = null;
                     if (exitCode === 0)
                         ToastService.showInfo("Keep Awake ended", "Sleep on idle and lid close is back.");
