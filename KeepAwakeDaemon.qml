@@ -108,11 +108,18 @@ PluginComponent {
         }
     }
 
+    Timer {
+        id: rehold
+        interval: 1000
+        onTriggered: root.apply()
+    }
+
     Component {
         id: inhibitComponent
 
         Process {
             property bool released: false
+            readonly property real spawnedAt: Date.now()
 
             onStarted: {
                 if (released)
@@ -126,17 +133,20 @@ PluginComponent {
                 }
             }
 
-            onExited: (exitCode, exitStatus) => {
-                // Killed by a signal means the session is going down (systemd stops the whole cgroup), not that time ran out.
-                if (!released && root.proc === this && exitStatus !== 0) {
+            onExited: exitCode => {
+                if (!released && root.proc === this) {
                     root.proc = null;
-                } else if (!released && root.proc === this) {
-                    root.proc = null;
-                    if (exitCode === 0)
+                    if (Duration.remaining(root.until, Date.now()) === 0) {
                         ToastService.showInfo("Keep Awake ended", "Sleep on idle and lid close is back.");
-                    else
+                        root.stop();
+                    } else if (exitCode !== 0 && Date.now() - spawnedAt < 2000) {
                         ToastService.showError("Keep Awake failed", "systemd-inhibit exited with code " + exitCode);
-                    root.stop();
+                        root.stop();
+                    } else {
+                        // Killed with time left: on DMS shutdown systemd stops the whole cgroup and this exit can land
+                        // before the plugin is torn down, so keep the saved session and re-take the lock if still alive.
+                        rehold.start();
+                    }
                 }
                 destroy();
             }

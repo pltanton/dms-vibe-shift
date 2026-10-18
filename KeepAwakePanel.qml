@@ -3,6 +3,7 @@ import qs.Common
 import qs.Services
 import qs.Widgets
 import "Duration.js" as Duration
+import "."
 
 Rectangle {
     id: panel
@@ -11,7 +12,8 @@ Rectangle {
     property bool flat: false
 
     readonly property bool timed: ctl.active && ctl.until !== Duration.FOREVER
-    readonly property real total: ctl.startedAt > 0 && timed ? ctl.until - ctl.startedAt : 0
+    readonly property bool customActive: ctl.active && ctl.preset !== "∞" && ctl.presets.indexOf(ctl.preset) < 0
+    property bool showCustom: false
 
     implicitHeight: content.implicitHeight + Theme.spacingL * 2
     radius: Theme.cornerRadius
@@ -82,82 +84,110 @@ Rectangle {
         anchors.margins: Theme.spacingL
         spacing: Theme.spacingM
 
-        Column {
+        Item {
             width: parent.width
-            spacing: Theme.spacingXS
+            height: Math.max(headerIcon.height, headerText.implicitHeight, countdown.implicitHeight)
+
+            AwakeIcon {
+                id: headerIcon
+                anchors.left: parent.left
+                anchors.verticalCenter: parent.verticalCenter
+                style: panel.ctl.iconStyle
+                awake: panel.ctl.active
+                size: Theme.iconSizeLarge
+                color: panel.ctl.active ? Theme.primary : Theme.surfaceText
+            }
+
+            Column {
+                id: headerText
+                anchors.left: headerIcon.right
+                anchors.leftMargin: Theme.spacingM
+                anchors.right: countdown.visible ? countdown.left : parent.right
+                anchors.rightMargin: Theme.spacingS
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: Theme.spacingXXS
+
+                StyledText {
+                    width: parent.width
+                    text: "Keep Awake"
+                    font.pixelSize: Theme.fontSizeLarge
+                    font.weight: Font.Medium
+                    color: Theme.surfaceText
+                    elide: Text.ElideRight
+                }
+
+                StyledText {
+                    width: parent.width
+                    text: {
+                        if (!panel.ctl.active)
+                            return "Sleeps on idle and lid close as usual";
+                        if (!panel.timed)
+                            return "Awake until you turn it off";
+                        return Duration.label(Duration.remaining(panel.ctl.until, panel.ctl.now)) + " left · until " + Duration.clock(panel.ctl.until, SettingsData.use24HourClock);
+                    }
+                    font.pixelSize: Theme.fontSizeSmall
+                    color: Theme.surfaceVariantText
+                    elide: Text.ElideRight
+                }
+            }
 
             StyledText {
-                anchors.horizontalCenter: parent.horizontalCenter
+                id: countdown
+                visible: panel.timed
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
                 text: {
-                    if (!panel.ctl.active)
-                        return "Off";
-                    if (!panel.timed)
-                        return "∞";
                     const r = Duration.remaining(panel.ctl.until, panel.ctl.now);
                     const h = Math.floor(r / 3600), m = Math.floor(r % 3600 / 60), s = r % 60;
                     return (h > 0 ? h + ":" + String(m).padStart(2, "0") : String(m)) + ":" + String(s).padStart(2, "0");
                 }
-                font.pixelSize: Theme.fontSizeXLarge * 2
+                font.pixelSize: Theme.fontSizeXLarge
                 font.weight: Font.Medium
-                isMonospace: panel.timed
-                color: panel.ctl.active ? Theme.primary : Theme.surfaceVariantText
-            }
-
-            StyledText {
-                anchors.horizontalCenter: parent.horizontalCenter
-                text: {
-                    if (!panel.ctl.active)
-                        return "Sleeps on idle and lid close as usual";
-                    if (!panel.timed)
-                        return "Awake until you turn it off";
-                    return "left · until " + Duration.clock(panel.ctl.until, SettingsData.use24HourClock);
-                }
-                font.pixelSize: Theme.fontSizeSmall
-                color: Theme.surfaceVariantText
-            }
-        }
-
-        Rectangle {
-            width: parent.width
-            height: 4
-            radius: 2
-            color: Theme.floatingSurface
-            opacity: panel.total > 0 ? 1 : 0
-
-            Rectangle {
-                height: parent.height
-                radius: parent.radius
+                isMonospace: true
                 color: Theme.primary
-                width: panel.total > 0 ? parent.width * Math.max(0, Math.min(1, (panel.ctl.until - panel.ctl.now) / panel.total)) : 0
             }
         }
 
-        Row {
-            id: presetRow
+        Grid {
+            id: presetGrid
             width: parent.width
-            spacing: Theme.spacingS
+            columns: 3
+            columnSpacing: Theme.spacingS
+            rowSpacing: Theme.spacingS
 
             Repeater {
                 model: panel.ctl.presets
 
                 Chip {
                     required property string modelData
-                    width: (presetRow.width - Theme.spacingS * (panel.ctl.presets.length - 1)) / panel.ctl.presets.length
+                    width: (presetGrid.width - Theme.spacingS * 2) / 3
                     label: Duration.presetLabel(modelData)
                     selected: panel.ctl.active && panel.ctl.preset === modelData
-                    onClicked: panel.ctl.start(modelData)
+                    onClicked: {
+                        panel.showCustom = false;
+                        panel.ctl.start(modelData);
+                    }
                 }
+            }
+
+            Chip {
+                width: (presetGrid.width - Theme.spacingS * 2) / 3
+                icon: "edit"
+                label: "Custom"
+                selected: panel.showCustom || panel.customActive
+                onClicked: panel.showCustom = !panel.showCustom
             }
         }
 
         Row {
+            visible: panel.showCustom
             width: parent.width
             spacing: Theme.spacingS
 
             DankTextField {
                 id: customField
                 width: parent.width - startChip.width - Theme.spacingS
-                placeholderText: "90m, 2h30m or 23:30"
+                placeholderText: "Custom: 90m, 2h30m or 23:30"
                 hidePlaceholderOnFocus: false
                 onAccepted: startChip.clicked()
             }
@@ -168,8 +198,10 @@ Rectangle {
                 width: 56
                 icon: "play_arrow"
                 onClicked: {
-                    if (panel.ctl.start(customField.text))
+                    if (panel.ctl.start(customField.text)) {
                         customField.text = "";
+                        panel.showCustom = false;
+                    }
                     else
                         ToastService.showWarning("Keep Awake", "Can't read \"" + customField.text + "\". Try 90m, 2h30m or 23:30.");
                 }
