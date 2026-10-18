@@ -109,7 +109,7 @@ Rectangle {
 
                 StyledText {
                     width: parent.width
-                    text: "Keep Awake"
+                    text: "Vibe Shift"
                     font.pixelSize: Theme.fontSizeLarge
                     font.weight: Font.Medium
                     color: Theme.surfaceText
@@ -203,7 +203,7 @@ Rectangle {
                         panel.showCustom = false;
                     }
                     else
-                        ToastService.showWarning("Keep Awake", "Can't read \"" + customField.text + "\". Try 90m, 2h30m or 23:30.");
+                        ToastService.showWarning("Vibe Shift", "Can't read \"" + customField.text + "\". Try 90m, 2h30m or 23:30.");
                 }
             }
         }

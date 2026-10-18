@@ -5,7 +5,7 @@ import qs.Modules.Plugins
 
 PluginSettings {
     id: root
-    pluginId: "keepAwake"
+    pluginId: "vibeShift"
 
     StringSetting {
         settingKey: "presets"
@@ -18,7 +18,7 @@ PluginSettings {
     StringSetting {
         settingKey: "defaultDuration"
         label: "Default duration"
-        description: "Used by the Control Center tile, right-click on the bar icon, and `dms ipc call keepAwake toggle`"
+        description: "Used by the Control Center tile, right-click on the bar icon, and `dms ipc call vibeShift toggle`"
         placeholder: "4h"
         defaultValue: "4h"
     }
@@ -26,7 +26,7 @@ PluginSettings {
     SelectionSetting {
         settingKey: "iconStyle"
         label: "Bar icon"
-        description: "Open while Keep Awake is on, closed while it's off"
+        description: "Open while Vibe Shift is on, closed while it's off"
         options: [
             {
                 label: "Owl eyes",
@@ -53,14 +53,14 @@ PluginSettings {
     ToggleSetting {
         settingKey: "hideWhenOff"
         label: "Hide bar icon when off"
-        description: "Show the icon only while Keep Awake is on. Otherwise the bar shows the icon with its eyes closed"
+        description: "Show the icon only while Vibe Shift is on. Otherwise the bar shows the icon with its eyes closed"
         defaultValue: false
     }
 
     ToggleSetting {
         settingKey: "blockLid"
         label: "Ignore lid close"
-        description: "Closing the lid won't suspend while Keep Awake is on"
+        description: "Closing the lid won't suspend while Vibe Shift is on"
         defaultValue: true
     }
 

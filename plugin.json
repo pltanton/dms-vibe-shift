@@ -1,7 +1,7 @@
 {
-    "id": "keepAwake",
-    "name": "Keep Awake",
-    "description": "Stay awake for a set time, even with the lid closed.",
+    "id": "vibeShift",
+    "name": "Vibe Shift",
+    "description": "Keep the laptop awake for a set time, even with the lid closed, while your agent works the night shift.",
     "version": "0.1.0",
     "author": "pltanton",
     "license": "MIT",
@@ -14,12 +14,13 @@
     ],
     "icon": "owl",
     "components": {
-        "daemon": "./KeepAwakeDaemon.qml",
-        "widget": "./KeepAwakeWidget.qml"
+        "daemon": "./VibeShiftDaemon.qml",
+        "widget": "./VibeShiftWidget.qml"
     },
-    "settings": "./KeepAwakeSettings.qml",
+    "settings": "./VibeShiftSettings.qml",
     "requires_dms": ">=1.5.0",
     "requires": [
+        "systemd-run",
         "systemd-inhibit"
     ],
     "permissions": [

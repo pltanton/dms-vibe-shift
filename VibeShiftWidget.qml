@@ -9,9 +9,9 @@ import "."
 PluginComponent {
     id: root
 
-    readonly property real until: pluginData.until ?? 0
-    readonly property real startedAt: pluginData.startedAt ?? 0
-    readonly property string preset: pluginData.preset ?? ""
+    property var shift: PluginService.getGlobalVar("vibeShift", "state", null) ?? {}
+    readonly property real until: shift.until ?? 0
+    readonly property string preset: shift.preset ?? ""
     readonly property var presets: Duration.parseList(pluginData.presets || "30m, 1h, 2h, 4h, 8h")
     readonly property string defaultDuration: pluginData.defaultDuration || "4h"
     readonly property bool blockLid: pluginData.blockLid ?? true
@@ -23,27 +23,36 @@ PluginComponent {
     property real now: Date.now()
     readonly property bool active: Duration.remaining(until, now) !== 0
 
-    function save(key, value) {
-        PluginService.savePluginData("keepAwake", key, value);
+    function request(action, text) {
+        PluginService.setGlobalVar("vibeShift", "request", {
+            "action": action,
+            "text": text,
+            "seq": Date.now() + Math.random()
+        });
     }
 
     function start(text) {
-        const now = Date.now();
-        const value = Duration.resolve(text, now);
-        if (value === 0)
+        if (Duration.resolve(text, Date.now()) === 0)
             return false;
-        save("preset", String(text).trim());
-        save("startedAt", now);
-        save("until", value);
+        request("start", text);
         return true;
     }
 
     function stop() {
-        save("until", 0);
+        request("stop", "");
     }
 
     function setOption(key, value) {
-        save(key, value);
+        PluginService.savePluginData("vibeShift", key, value);
+    }
+
+    Connections {
+        target: PluginService
+
+        function onGlobalVarChanged(pluginId, varName) {
+            if (pluginId === "vibeShift" && varName === "state")
+                root.shift = PluginService.getGlobalVar("vibeShift", "state", null) ?? {};
+        }
     }
 
     onUntilChanged: now = Date.now()
@@ -64,7 +73,7 @@ PluginComponent {
             "eye": active ? "visibility" : "visibility_off",
             "laptop": "laptop"
         })[iconStyle] ?? "owl"
-    ccWidgetPrimaryText: "Keep Awake"
+    ccWidgetPrimaryText: "Vibe Shift"
     ccWidgetSecondaryText: {
         if (!active)
             return "Off";
@@ -76,7 +85,7 @@ PluginComponent {
     onCcWidgetToggled: active ? stop() : start(defaultDuration)
 
     ccDetailContent: Component {
-        KeepAwakePanel {
+        VibeShiftPanel {
             ctl: root
             onImplicitHeightChanged: root.ccDetailHeight = implicitHeight + Theme.spacingS
             Component.onCompleted: root.ccDetailHeight = implicitHeight + Theme.spacingS
@@ -134,7 +143,7 @@ PluginComponent {
     }
 
     popoutContent: Component {
-        KeepAwakePanel {
+        VibeShiftPanel {
             ctl: root
             flat: true
         }
