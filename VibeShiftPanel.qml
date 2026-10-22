@@ -28,50 +28,13 @@ Rectangle {
         onTriggered: panel.ctl.now = Date.now()
     }
 
-    component Chip: Rectangle {
-        id: chip
-
-        property string label: ""
-        property string icon: ""
+    component Chip: DButton {
         property bool selected: false
         property bool danger: false
-        signal clicked
 
-        height: 36
-        radius: Theme.cornerRadius
-        color: selected ? Theme.ccTileActiveBg : chipArea.containsMouse ? Qt.tint(Theme.ccPillInactiveBg, danger ? Theme.errorPressed : Theme.primaryPressed) : Theme.ccPillInactiveBg
-
-        readonly property color fg: selected ? Theme.ccTileActiveText : (danger && chipArea.containsMouse ? Theme.error : Theme.surfaceText)
-
-        Row {
-            anchors.centerIn: parent
-            spacing: Theme.spacingXS
-
-            DIcon {
-                visible: chip.icon !== ""
-                anchors.verticalCenter: parent.verticalCenter
-                name: chip.icon
-                size: Theme.iconSizeSmall
-                color: chip.fg
-            }
-
-            StyledText {
-                visible: chip.label !== ""
-                anchors.verticalCenter: parent.verticalCenter
-                text: chip.label
-                font.pixelSize: Theme.fontSizeSmall
-                font.weight: Font.Medium
-                color: chip.fg
-            }
-        }
-
-        MouseArea {
-            id: chipArea
-            anchors.fill: parent
-            hoverEnabled: true
-            cursorShape: Qt.PointingHandCursor
-            onClicked: chip.clicked()
-        }
+        iconSize: Theme.iconSizeSmall
+        backgroundColor: selected ? Theme.ccTileActiveBg : Theme.ccPillInactiveBg
+        textColor: selected ? Theme.ccTileActiveText : danger && hovered ? Theme.error : Theme.surfaceText
     }
 
     Column {
@@ -159,7 +122,7 @@ Rectangle {
                 Chip {
                     required property string modelData
                     width: (presetGrid.width - Theme.spacingS * 2) / 3
-                    label: Duration.presetLabel(modelData)
+                    text: Duration.presetLabel(modelData)
                     selected: panel.ctl.active && panel.ctl.preset === modelData
                     onClicked: {
                         panel.showCustom = false;
@@ -170,8 +133,8 @@ Rectangle {
 
             Chip {
                 width: (presetGrid.width - Theme.spacingS * 2) / 3
-                icon: "edit"
-                label: "Custom"
+                iconName: "edit"
+                text: "Custom"
                 selected: panel.showCustom || panel.customActive
                 onClicked: panel.showCustom = !panel.showCustom
             }
@@ -193,8 +156,7 @@ Rectangle {
             Chip {
                 id: startChip
                 anchors.verticalCenter: customField.verticalCenter
-                width: 56
-                icon: "play_arrow"
+                iconName: "play_arrow"
                 onClicked: {
                     if (panel.ctl.start(customField.text)) {
                         customField.text = "";
@@ -212,8 +174,8 @@ Rectangle {
 
             Chip {
                 width: panel.ctl.active ? (parent.width - Theme.spacingS) / 2 : parent.width
-                icon: "all_inclusive"
-                label: "Until I turn it off"
+                iconName: "all_inclusive"
+                text: "Until I turn it off"
                 selected: panel.ctl.active && !panel.timed
                 onClicked: panel.ctl.start("∞")
             }
@@ -221,8 +183,8 @@ Rectangle {
             Chip {
                 visible: panel.ctl.active
                 width: (parent.width - Theme.spacingS) / 2
-                icon: "stop"
-                label: "Turn off"
+                iconName: "stop"
+                text: "Turn off"
                 danger: true
                 onClicked: panel.ctl.stop()
             }
@@ -230,7 +192,7 @@ Rectangle {
 
         Rectangle {
             width: parent.width
-            height: 1
+            height: Theme.dividerWidth
             color: Theme.outlineMedium
         }
 

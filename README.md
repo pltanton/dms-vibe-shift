@@ -38,4 +38,4 @@ git clone https://github.com/pltanton/dms-vibe-shift ~/.config/dms/plugins/vibeS
 dms ipc call plugins enable vibeShift
 ```
 
-Then add the widget to the bar and/or the Control Center. Needs DMS >= 2.0.0 and systemd.
+Then add the widget to the bar and/or the Control Center. Needs DMS >= 2.0.0, systemd and gdbus (glib).

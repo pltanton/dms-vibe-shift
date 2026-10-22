@@ -21,7 +21,8 @@
     "requires_dms": ">=2.0.0",
     "requires": [
         "systemd-run",
-        "systemd-inhibit"
+        "systemd-inhibit",
+        "gdbus"
     ],
     "permissions": [
         "settings_read",

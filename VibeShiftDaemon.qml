@@ -16,7 +16,7 @@ PluginComponent {
     readonly property bool lockOnLid: pluginData.lockOnLid ?? true
 
     // Suspend normally does the locking, and it's blocked now, so lock when the lid shuts on the laptop panel alone.
-    readonly property string lidWatch: 'external() { for f in /sys/class/drm/card*-*/status; do case "$f" in *eDP*|*LVDS*|*DSI*) ;; *) [ "$(cat "$f")" = connected ] && return 0 ;; esac; done; return 1; }; ' + 'was=0; while sleep 2; do if [ "$(busctl get-property org.freedesktop.login1 /org/freedesktop/login1 org.freedesktop.login1.Manager LidClosed)" = "b true" ]; then ' + '[ $was = 0 ] && ! external && dms ipc call lock lock; was=1; else was=0; fi; done'
+    readonly property string lidWatch: 'external() { for f in /sys/class/drm/card*-*/status; do case "$f" in *eDP*|*LVDS*|*DSI*) ;; *) [ "$(cat "$f")" = connected ] && return 0 ;; esac; done; return 1; }; ' + 'while :; do gdbus monitor --system --dest org.freedesktop.login1 --object-path /org/freedesktop/login1 | while read -r line; do ' + 'case "$line" in *"\'LidClosed\': <true>"*) external || dms ipc call lock lock ;; esac; done; sleep 5; done'
 
     property real until: 0
     property string preset: ""
