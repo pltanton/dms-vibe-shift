@@ -23,7 +23,9 @@ PluginComponent {
     property bool busy: false
     property bool loaded: false
     property real launchedAt: 0
-    property bool ownsScreenInhibit: false
+    property var queue: []
+    // DMS restores the idle inhibitor across restarts, so ownership has to survive them too.
+    readonly property bool ownsScreenInhibit: pluginData.ownsScreenInhibit ?? false
     readonly property bool active: until !== 0
 
     function publish() {
@@ -38,11 +40,26 @@ PluginComponent {
             expiry.stop();
     }
 
+    // Proc keeps one callback per id, so overlapping commands would lose callbacks and race each other.
     function run(command, done) {
         busy = true;
-        Proc.runCommand("vibeShift.cmd", command, (out, code) => {
-            busy = false;
-            done(code);
+        queue = queue.concat([{
+                "command": command,
+                "done": done
+            }]);
+        if (queue.length === 1)
+            runNext();
+    }
+
+    function runNext() {
+        const job = queue[0];
+        Proc.runCommand("vibeShift.cmd", job.command, (out, code) => {
+            queue = queue.slice(1);
+            job.done(code);
+            if (queue.length > 0)
+                runNext();
+            else
+                busy = false;
         }, 0);
     }
 
@@ -112,11 +129,11 @@ PluginComponent {
 
     function syncScreen() {
         const want = active && keepScreenOn;
-        if (want && !ownsScreenInhibit) {
-            ownsScreenInhibit = true;
+        if (want && !ownsScreenInhibit && !SessionService.idleInhibited) {
+            PluginService.savePluginData("vibeShift", "ownsScreenInhibit", true);
             SessionService.enableIdleInhibit();
         } else if (!want && ownsScreenInhibit) {
-            ownsScreenInhibit = false;
+            PluginService.savePluginData("vibeShift", "ownsScreenInhibit", false);
             SessionService.disableIdleInhibit();
         }
     }
@@ -132,7 +149,7 @@ PluginComponent {
     onLockOnLidChanged: relaunch()
 
     function relaunch() {
-        if (loaded && active)
+        if (loaded && active && Duration.remaining(until, Date.now()) !== 0)
             launch(until, preset);
     }
     onKeepScreenOnChanged: syncScreen()

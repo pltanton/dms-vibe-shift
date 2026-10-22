@@ -2,39 +2,24 @@
 
 const FOREVER = -1;
 
-function clockTarget(s, nowMs) {
-    const m = /^(\d{1,2}):(\d{2})$/.exec(s);
-    if (!m)
-        return 0;
-    const h = parseInt(m[1], 10), min = parseInt(m[2], 10);
-    if (h > 23 || min > 59)
-        return 0;
-    const now = new Date(nowMs);
-    const t = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, min, 0, 0);
-    if (t.getTime() <= nowMs)
-        t.setDate(t.getDate() + 1);
-    return t.getTime();
-}
+const CLOCK = /^([01]?\d|2[0-3]):([0-5]\d)$/;
+const SPAN = /^(?:(\d+)\s*h)?\s*(?:(\d+)\s*(?:m|$))?\s*(?:(\d+)\s*s)?$/;
 
-// Returns the absolute end time in ms, FOREVER, or 0 for unparseable input.
 function resolve(text, nowMs) {
     const s = String(text ?? "").trim().toLowerCase();
-    if (s === "∞" || s === "inf" || s === "infinity" || s === "forever")
+    if (["∞", "inf", "infinity", "forever"].includes(s))
         return FOREVER;
-    const clock = clockTarget(s, nowMs);
-    if (clock)
-        return clock;
-    if (/^\d+$/.test(s))
-        return parseInt(s, 10) > 0 ? nowMs + parseInt(s, 10) * 60000 : 0;
-    const re = /(\d+)\s*([hms])/g;
-    let total = 0, consumed = "", m;
-    while ((m = re.exec(s)) !== null) {
-        total += parseInt(m[1], 10) * ({ h: 3600, m: 60, s: 1 })[m[2]];
-        consumed += m[0];
+    const c = CLOCK.exec(s);
+    if (c) {
+        const t = new Date(nowMs);
+        t.setHours(Number(c[1]), Number(c[2]), 0, 0);
+        if (t.getTime() <= nowMs)
+            t.setDate(t.getDate() + 1);
+        return t.getTime();
     }
-    if (total <= 0 || consumed.replace(/\s/g, "") !== s.replace(/\s/g, ""))
-        return 0;
-    return nowMs + total * 1000;
+    const d = SPAN.exec(s);
+    const seconds = d ? Number(d[1] ?? 0) * 3600 + Number(d[2] ?? 0) * 60 + Number(d[3] ?? 0) : 0;
+    return seconds > 0 ? nowMs + seconds * 1000 : 0;
 }
 
 function parseList(text) {
@@ -42,7 +27,7 @@ function parseList(text) {
 }
 
 function isClock(text) {
-    return /^\d{1,2}:\d{2}$/.test(String(text).trim());
+    return CLOCK.test(String(text).trim());
 }
 
 function presetLabel(text) {
