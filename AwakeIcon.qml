@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Shapes
 
-// Drawn as vector shapes: DankSVGIcon rasterizes and recolors through an effect layer, which blurs at bar size.
+// Drawn as vector shapes: DSVGIcon rasterizes and recolors through an effect layer, which blurs at bar size.
 Item {
     id: icon
 

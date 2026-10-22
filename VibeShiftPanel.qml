@@ -1,7 +1,7 @@
 import QtQuick
 import qs.Common
 import qs.Services
-import qs.Widgets
+import qs.DCommon.Widgets
 import "Duration.js" as Duration
 import "."
 
@@ -49,7 +49,7 @@ Rectangle {
             anchors.centerIn: parent
             spacing: Theme.spacingXS
 
-            DankIcon {
+            DIcon {
                 visible: chip.icon !== ""
                 anchors.verticalCenter: parent.verticalCenter
                 name: chip.icon
@@ -184,7 +184,7 @@ Rectangle {
             width: parent.width
             spacing: Theme.spacingS
 
-            DankTextField {
+            DTextField {
                 id: customField
                 width: parent.width - startChip.width - Theme.spacingS
                 placeholderText: "Custom: 90m, 2h30m or 23:30"
@@ -236,7 +236,7 @@ Rectangle {
             color: Theme.outlineMedium
         }
 
-        DankToggle {
+        DToggle {
             width: parent.width
             text: "Ignore lid close"
             description: "Closing the lid won't suspend"
@@ -244,7 +244,7 @@ Rectangle {
             onToggled: checked => panel.ctl.setOption("blockLid", checked)
         }
 
-        DankToggle {
+        DToggle {
             width: parent.width
             text: "Keep screen on"
             description: "Don't lock or blank the screen on idle"

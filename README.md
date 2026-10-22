@@ -34,8 +34,8 @@ Without DMS: `systemctl --user status vibe-shift` / `systemctl --user stop vibe-
 ## Install
 
 ```sh
-git clone https://github.com/pltanton/dms-vibe-shift ~/.config/DankMaterialShell/plugins/vibeShift
+git clone https://github.com/pltanton/dms-vibe-shift ~/.config/dms/plugins/vibeShift
 dms ipc call plugins enable vibeShift
 ```
 
-Then add the widget to the bar and/or the Control Center. Needs DMS >= 1.5.0 and systemd.
+Then add the widget to the bar and/or the Control Center. Needs DMS >= 2.0.0 and systemd.
