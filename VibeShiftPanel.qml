@@ -39,11 +39,9 @@ Rectangle {
 
         height: 36
         radius: Theme.cornerRadius
-        color: selected ? Theme.primary : chipArea.containsMouse ? (danger ? Theme.errorPressed : Theme.primaryPressed) : Theme.floatingSurface
-        border.color: selected ? Theme.primary : Theme.outlineStrong
-        border.width: 1
+        color: selected ? Theme.ccTileActiveBg : chipArea.containsMouse ? Qt.tint(Theme.ccPillInactiveBg, danger ? Theme.errorPressed : Theme.primaryPressed) : Theme.ccPillInactiveBg
 
-        readonly property color fg: selected ? Theme.primaryText : (danger && chipArea.containsMouse ? Theme.error : Theme.surfaceText)
+        readonly property color fg: selected ? Theme.ccTileActiveText : (danger && chipArea.containsMouse ? Theme.error : Theme.surfaceText)
 
         Row {
             anchors.centerIn: parent
