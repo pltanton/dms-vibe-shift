@@ -2,6 +2,8 @@
 
 A [DankMaterialShell](https://github.com/AvengeMedia/DankMaterialShell) plugin that keeps the laptop from suspending for a set time, even with the lid closed, so an agent can keep working overnight. The screen still blanks and locks as usual.
 
+![Vibe Shift popout](screenshots/popout.png)
+
 DMS's built-in idle inhibitor only blocks the Wayland idle timer, so closing the lid still suspends. Vibe Shift holds a logind lock instead. Roughly what it runs (an illustration; the plugin won't see a unit started this way):
 
 ```sh
